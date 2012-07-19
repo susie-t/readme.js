@@ -65,16 +65,19 @@ Readme.prototype = {
     if(obj.page instanceof Array){
       obj.page.each(function(data){
         var key;
+        var hash = $H(data);
         if(data instanceof Array){
           key = data[0];
           pages[key] = data[1];
         }else if(["string", "number"].include(typeof(data))){
           key = data;
           pages[key] = {};
-        }else{
-          hash = $H(data);
+        }else if(hash.keys().length == 1){
           key = hash.keys().first();
           pages[key] = hash.values().first();
+        }else{
+          key = data.key;
+          pages[key] = data;
         }
         pagesItr.push(key);
       });
