@@ -843,8 +843,10 @@ Readme.prototype = {
         text = text.replace(/\r\n(\*+)([^\*].*?)(\[\#(.*?)\])?(?=\r\n)/g, function(){
              var arg = arguments;
              if(!isSimple && arg[3] == null) return arg[0];
-             return "\r\n<header><span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
-               + ((isWeb || arg[1].length > 1) ?  "" : "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + _srcFile + "&nbsp;]") + "</span>"
+             return "\r\n<header>"
+               + (isSimple ? "" 
+                 : "<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
+                 + ((isWeb || arg[1].length > 1) ?  "" : "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + _srcFile + "&nbsp;]") + "</span>")
                + "<h2 class='title'" + ((arg[4]) ? " id='" + arg[4] + "'" : "") + ">" + arg[2]
                + ((arg[3]) ? "<span class='append'><a class='anchor_super' id='" + arg[4] + "' href='?" + key + "#" + arg[4] + "'" + " title='" + arg[4] + "'>&nbsp;&dagger;&nbsp;</a></span>" : "")
                + "</h2></header>";
