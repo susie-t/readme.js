@@ -25,6 +25,7 @@ Readme.prototype = {
     var isHTML = !!(obj.isHTML)
     var terop = obj.terop;
     var isHeadListNumber = isDiary ? false : (obj.isHeadListNumber !== false);
+    //var isHeadListNumber = false;
     var isWeb = obj.isWeb;
 
     var isFirefox = (/firefox/i).test(navigator.userAgent); //Firefoxバグ?対応
@@ -134,7 +135,15 @@ Readme.prototype = {
 
     var button = {};
 
-    if(isAjax) {
+    if(isSimple){
+      button[bN.BACK] = function() { backPage(); };
+      button[bN.RELOAD] = function() { reloadPage(); };
+      if(!isWeb){
+        button[bN.HELP] = function() { writePage("_help"); };
+        button[bN.ROOT] = "./";
+        button[bN.SRC] = srcDir;
+      }
+    }else if(isAjax) {
       button[bN.BACK] = function() { backPage(); };
       button[bN.RELOAD] = function() { reloadPage(); };
       button[bN.TOP] = function() { writePage(); };
@@ -344,7 +353,7 @@ Readme.prototype = {
               var wk = "";
               $(headList).children("section").each(function(){
                 var title1 = $($(this).find("h2.title").get(0));
-                title1.html(num1 + ".&nbsp" + title1.html());
+                title1.html(num1 + ".&nbsp;" + title1.html());
                 var num2 = 1;
                 $(this).children("section").each(function(){
                   var title2 = $($(this).find("h2.title").get(0));
@@ -818,21 +827,29 @@ Readme.prototype = {
 
         var hl = "section";
 
-        text = text.replace(/(\r\n\*{3}(?!\*)(?:.|\r\n)*?)(?=\r\n\*{2,3}[^*]|$)/g, "$1\r\n</" + hl + ">");
+        text = text.replace(/(\r\n\*{3}(?!\*)(?:.|\r\n)*?)(?=\r\n\*{1,3}[^*]|$)/g, "$1\r\n</" + hl + ">");
         text = text.replace(/(\r\n\*{3})(?!\*)/g, "\r\n<" + hl + ">$1");
-        text = text.replace(/(\r\n\*{2}(?!\*)(?:.|\r\n)*?)(?=\r\n\*{2}[^*]|$)/g, "$1\r\n</" + hl + ">");
+
+        text = text.replace(/(\r\n\*{2}(?!\*)(?:.|\r\n)*?)(?=\r\n\*{1,2}[^*]|$)/g, "$1\r\n</" + hl + ">");
         text = text.replace(/(\r\n\*{2})(?!\*)/g, "\r\n<" + hl + ">$1");
+
+        if(isSimple){
+          text = text.replace(/(?:^|\r\n)(\*{1}(?!\*)(?:.|\r\n)*?)(?=\r\n\*{1}[^*]|$)/g, "<" + hl + ">\r\n$1\r\n</" + hl + ">");
+        }else{
+          text = text.replace(/^(\*{1}(?!\*)(?:.|\r\n)*?)$/g, "<" + hl + ">\r\n$1\r\n</" + hl + ">");
+        }
         text = text.replace(/^(\*{1}(?!\*)(?:.|\r\n)*?)$/g, "<" + hl + ">\r\n$1\r\n</" + hl + ">");
 
-        text = text.replace(/\r\n\*([^\*].*?)\[\#(.*?)\](?=\r\n)/g,
-               "\r\n<header><span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
-             + ((isWeb) ?  "" : "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + _srcFile + "&nbsp;]") + "</span>"
-             + "<h2 class='title' id='$2'>$1<span class='append'><a class='anchor_super' id='$2' href='?" + key + "#$2'" + " title='$2'>&nbsp;&dagger;&nbsp;</a></span></h2></header>");
-
-        text = text.replace(/\r\n\*+([^\*].*?)\[\#(.*?)\](?=\r\n)/g,
-               "\r\n<header><span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a></span>"
-             + "<h2 class='title' id='$2'>$1<span class='append'><a class='anchor_super' id='$2' href='?" + key + "#$2'" + " title='$2'>&nbsp;&dagger;&nbsp;</a></span></h2></header>");
-
+        text = text.replace(/\r\n(\*+)([^\*].*?)(\[\#(.*?)\])?(?=\r\n)/g, function(){
+             var arg = arguments;
+             if(!isSimple && arg[3] == null) return arg[0];
+             return "\r\n<header><span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
+               + ((isWeb || arg[1].length > 1) ?  "" : "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + _srcFile + "&nbsp;]") + "</span>"
+               + "<h2 class='title'" + ((arg[4]) ? " id='" + arg[4] + "'" : "") + ">" + arg[2]
+               + ((arg[3]) ? "<span class='append'><a class='anchor_super' id='" + arg[4] + "' href='?" + key + "#" + arg[4] + "'" + " title='" + arg[4] + "'>&nbsp;&dagger;&nbsp;</a></span>" : "")
+               + "</h2></header>";
+        });
+        
         //目次(削除)
         text = text.replace(/#contents;?/g, "");
 
@@ -862,8 +879,8 @@ Readme.prototype = {
         });
 
         /*
-        * インライン要素
-        */
+         * インライン要素
+         */
         //リンク
         text = text.replace(/(^|[&#]ref\( *|[^:])((?:https?|ftp|news):\/\/(?:[^:\/<'" \r\n]+)(?::(?:\d+))?(?:\/[^<'" \r\n]*)?)/ig, function() {
           if(arguments[1].match(/^[&#]ref\( *$/)) return arguments[0];
@@ -1134,12 +1151,12 @@ Readme.makeIndex = function(key, isHeadListNumber) {
     $A(obj.childNodes).each(function(child) {
       if(!child.tagName) throw $continue;
       if(child.tagName.toLowerCase() == "section") {
-        if(child.id == null || child.id == "") {
-          child.id = "Readme.makeIndex." + idIndex++;
-        }
         var title = jQuery(child).find("h2.title").get(0);
+        if(title.id == null || title.id == "") {
+          title.id = "Readme_makeIndex_" + idIndex++;
+        }
         var childValue = title.innerHTML.replace(/<span +class *= *(['"])?append\1 *>.+< *\/ *span *>$/i, "").unescapeHTML();
-        indexStr += "<li><div class='title'><a href='" + defaultPage + "#" + child.id + "'>" + childValue + "</a></div></li>";
+        indexStr += "<li><div class='title'><a href='" + defaultPage + "#" + title.id + "'>" + childValue + "</a></div></li>";
       }
       var childOlObj = null;
       if(child.tagName.toLowerCase() == hl && child.className != "list") {
