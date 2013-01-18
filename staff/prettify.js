@@ -827,7 +827,12 @@ function PR_recombineTagsAndDecorations(
       var htmlChunk = PR_textToHtml(
           tabExpander(sourceText.substring(outputIdx, sourceIdx)))
           .replace(/(\r\n?|\n| ) /g, '$1&nbsp;')
-          .replace(/\r\n?|\n/g, '<br>');
+          
+          //コピー＆ペースト時に改行が失われるので外す。
+          //IE Quirksモード対応らしいのでもういいだろう・・・。
+          //.replace(/\r\n?|\n/g, '<br>');
+          
+          ;
       html.push(htmlChunk);
       outputIdx = sourceIdx;
     }

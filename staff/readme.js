@@ -9,10 +9,32 @@ Readme.prototype = {
     window.__readme = this;
     this.writePage = writePage;
     var debug = Readme.debug;
-    //debug.isValid = true;
+    debug.isValid = true;
 
     var locationPage = "staff/location.htm?" + encodeURIComponent(location.href.replace(/\?.*$/, "") + "?");
     //var locationPage = "staff/location.htm?";
+
+    var base = $('base');
+    var index = $("index");
+    var title = $("title");
+    var date = $("date");
+    var menu = $("menu");
+
+    if(obj instanceof Array) {
+      obj = {
+        isSimple: true,
+        isHeadListNumber: false,
+        page: {
+          "": {
+            name: "",
+            title: title ? title.innerHTML : '',
+            date: date ? date.innerHTML : '',
+            src: obj
+          }
+        }
+      };
+      isSimple = true;
+    }
 
     var srcDir = obj.srcDir || "readmesrc";
     var suffix = obj.suffix || ".txt";
@@ -25,19 +47,14 @@ Readme.prototype = {
     var isHTML = !!(obj.isHTML)
     var terop = obj.terop;
     var isHeadListNumber = isDiary ? false : (obj.isHeadListNumber !== false);
-    //var isHeadListNumber = false;
     var isWeb = obj.isWeb;
+    var isForPaste = obj.isForPaste;
 
     var isFirefox = (/firefox/i).test(navigator.userAgent); //Firefoxバグ?対応
     var current = [];
 
-    var base = $('base');
-    var index = $("index");
-    var title = $("title");
-    var date = $("date");
-    var menu = $("menu");
     var select = null;
-    var isSimple = false;
+    var isSimple = obj.isSimple;
 
     //var AjaxOrHFT = Ajax;
 
@@ -46,20 +63,6 @@ Readme.prototype = {
         //AjaxOrHFT = HFT;
       /*@end
     @*/
-
-    if(obj instanceof Array) {
-      obj = {
-        page: {
-          "": {
-            name: "",
-            title: title.innerHTML,
-            date: date.innerHTML,
-            src: obj
-          }
-        }
-      };
-      isSimple = true;
-    }
 
     var pages = {};
     var pagesItr = [];
@@ -139,6 +142,7 @@ Readme.prototype = {
       button[bN.BACK] = function() { backPage(); };
       button[bN.RELOAD] = function() { reloadPage(); };
       if(!isWeb){
+        srcDir = "./";
         button[bN.HELP] = function() { writePage("_help"); };
         button[bN.ROOT] = "./";
         button[bN.SRC] = srcDir;
@@ -239,6 +243,7 @@ Readme.prototype = {
       var _isHTML = (page.isHTML != null) ? page.isHTML : isHTML;
       var _terop = page.terop || terop;
       var _isHeadListNumber = (page.isHeadListNumber != null) ? page.isHeadListNumber : isHeadListNumber;
+      var _isForPaste = (page.isForPaste != null) ? page.isForPaste : isForPaste;
       title.innerHTML = page.title || obj.title || page.name || key || "&nbsp;";
       date.innerHTML = page.date || obj.date || "&nbsp;";
       base.innerHTML = "";
@@ -267,12 +272,13 @@ Readme.prototype = {
 
           new Insertion.Bottom(base,
             "<form id='searchForm' onsubmit='return false;'>"
-            + "検索対象は変換前のテキストです。大文字小文字を区別します。<br/>"
+            + "検索対象は変換前のテキストです。AND、OR検索は大文字小文字を区別します。<br/>"
             + "<input id='searchText' type='text'/><input type='text' style='display:none;'/>"
             + "<button id='searchButton'>検索</button>"
-            + "<input type='radio' name='searchType' value='and' checked/> AND検索"
-            + "<input type='radio' name='searchType' value='or'/> OR検索"
+            + "<input type='radio' name='searchType' value='and' checked/> AND検索 "
+            + "<input type='radio' name='searchType' value='or'/> OR検索 "
             + "<input type='radio' name='searchType' value='regExp'/> 正規表現検索"
+            + "<input type='checkbox' name='ignoreCase' checked /> 大文字・小文字区別なし"
             + "<div id='searchResult'></div>"
             + "</form>");
 
@@ -294,7 +300,8 @@ Readme.prototype = {
           }else{
             var headList = base;
           }
-          
+
+          var srcCount = 0;
           src.each(function(value, index) {
             var __isHTML = (_isHTML || /\.html?$/i.test(value));
 //            new AjaxOrHFT.Request(_srcDir + '/' + value + _suffix, {
@@ -334,6 +341,73 @@ Readme.prototype = {
                   text = readWikiSrc(text, _srcDir, value + _suffix);
                 }
                 new Insertion.Bottom(headList, text);
+                
+                srcCount++;
+                
+                if(srcCount == src.length){
+                  if(_isHeadListNumber){
+                    (function($){
+                      var num1 = 1;
+                      var wk = "";
+                      $(headList).children("section").each(function(){
+                        var title1 = $($(this).find("h2.title").get(0));
+                        title1.html(num1 + ".&nbsp;" + title1.html());
+                        var num2 = 1;
+                        $(this).children("section").each(function(){
+                          var title2 = $($(this).find("h2.title").get(0));
+                          title2.html(num1 + "-" + num2 + ".&nbsp;" + title2.html());
+                          var num3 = 1;
+                          $(this).children("section").each(function(){
+                            var title3 = $($(this).find("h2.title").get(0));
+                            title3.html(num1 + "-" + num2 + "-" + num3 + ".&nbsp;" + title3.html());
+                            num3++;
+                          });
+                          num2++;
+                        });
+                        num1++;
+                       });
+                    })(jQuery);
+                  }
+                  
+                  if(page.prettyPrint) {
+                    prettyPrint();
+                  }
+                  
+                  if(_isForPaste){
+                    (function($){
+                      //$(headList).find("ul li div.title, section h2.title").css({"margin-left":"auto"});
+                      $(headList).find("*").each(function(){
+                        var css;
+                        if (document.defaultView && document.defaultView.getComputedStyle) {
+                          css = document.defaultView.getComputedStyle(this, null);
+                        } else if (this.currentStyle) {
+                          css = this.currentStyle;
+                        }else{
+                          return;
+                        }
+                        var style = "";
+                        for(var key in css){
+                          var isSkip = false;
+                          $.each(["width", "height"], function(){
+                            if((new RegExp(this)).test(key)){
+                              isSkip = true;
+                              return false;
+                            }
+                          });
+                          if(isSkip) continue;
+                          var value = css[key];
+                          var cp = key.replace(/[A-Z]/g, function(){
+                            var arg = arguments;
+                            return "-" + arg[0].toLowerCase();
+                          });
+                          style += cp + ":" + value + ";";
+                        }
+                        $(this).attr("style", style);
+                      });
+                    })(jQuery);
+                  }
+                  
+                }
               },
               error : function(obj, status, e) {
                 var msg = "Ajax Error : " + obj.url;
@@ -342,34 +416,7 @@ Readme.prototype = {
                 throw new Error(msg);
               }
             });
-            if(page.prettyPrint) {
-              prettyPrint();
-            }
           });
-          
-          if(_isHeadListNumber){
-            (function($){
-              var num1 = 1;
-              var wk = "";
-              $(headList).children("section").each(function(){
-                var title1 = $($(this).find("h2.title").get(0));
-                title1.html(num1 + ".&nbsp;" + title1.html());
-                var num2 = 1;
-                $(this).children("section").each(function(){
-                  var title2 = $($(this).find("h2.title").get(0));
-                  title2.html(num1 + "-" + num2 + ".&nbsp;" + title2.html());
-                  var num3 = 1;
-                  $(this).children("section").each(function(){
-                    var title3 = $($(this).find("h2.title").get(0));
-                    title3.html(num1 + "-" + num2 + "-" + num3 + ".&nbsp;" + title3.html());
-                    num3++;
-                  });
-                  num2++;
-                });
-                num1++;
-               });
-            })(jQuery);
-          }
 
           index.onclick = function() { Readme.makeIndex((isAjax) ? null : key, _isHeadListNumber); };
           index.style.cursor = "pointer";
@@ -396,18 +443,20 @@ Readme.prototype = {
         $("searchButton").disabled = true;
 
         var searchType = $A($("searchForm").searchType).detect(function(value) { return (value.checked == true); }).value;
+        var ignoreCase = $("searchForm").ignoreCase.checked;
 
         var regExp;
         var searchWordArray;
         switch(searchType) {
           case "and":
           case "or":
+            if(ignoreCase) searchText = searchText.toLowerCase();
             searchWordArray = searchText.split(/[ 　]+/); //半角・全角空白
             break;
 
           case "regExp":
             try {
-              eval("regExp = /" + searchText + "/;");
+              eval("regExp = /" + searchText + "/" + (ignoreCase ? 'i' : '') + ";");
             } catch(e) {
               new Insertion.Bottom(searchResult, "不正な正規表現です。");
               $("searchButton").disabled = false;
@@ -486,6 +535,7 @@ Readme.prototype = {
               url : _srcDir + '/' + _src + _suffix,
               async  : false,
               success :function(text) {
+                if(ignoreCase) text = text.toLowerCase();
                 var isHit = false;
                 var searchFnc = function(searchWord) { return (text.indexOf(searchWord) != -1) };
                 switch(searchType) {
@@ -672,7 +722,10 @@ Readme.prototype = {
         text = text.replace(/\r\n\/\/.*?(?=\r\n)/g, "");
 
         //【独自】折りたたみエリア
-        text = text.replace(/\r\n<\?--((?:.*?\r\n)*?.*?)\r\n--\?>/g, "\r\n\$lt;div class='hiddenArea' onclick='Readme.showHiddenArea(this);'\$gt;\r\n＞＞＞クリックすると表示します＜＜＜$1\r\n\$lt;/div\$gt;");
+        text = text.replace(/\r\n<\?--(.*?)\r\n((?:.*?\r\n)*?.*?)\r\n--\?>/g, function(){
+          var msg = arguments[1] || "＞＞＞クリックすると表示します＜＜＜";
+          return "\r\n\$lt;div class='hiddenArea' onclick='Readme.showHiddenArea(this);'\$gt;\r\n" + msg + "\r\n" + arguments[2] + "\r\n\$lt;/div\$gt;"
+        });
 
         //エスケープ
         text = text.replace(/</g, "&lt;");
@@ -844,11 +897,11 @@ Readme.prototype = {
              var arg = arguments;
              if(!isSimple && arg[3] == null) return arg[0];
              return "\r\n<header>"
-               + (isSimple ? "" 
+               + ((isSimple || _isForPaste) ? "" 
                  : "<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
                  + ((isWeb || arg[1].length > 1) ?  "" : "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + _srcFile + "&nbsp;]") + "</span>")
                + "<h2 class='title'" + ((arg[4]) ? " id='" + arg[4] + "'" : "") + ">" + arg[2]
-               + ((arg[3]) ? "<span class='append'><a class='anchor_super' id='" + arg[4] + "' href='?" + key + "#" + arg[4] + "'" + " title='" + arg[4] + "'>&nbsp;&dagger;&nbsp;</a></span>" : "")
+               + ((arg[3] && !_isForPaste) ? "<span class='append'><a class='anchor_super' id='" + arg[4] + "' href='?" + key + "#" + arg[4] + "'" + " title='" + arg[4] + "'>&nbsp;&dagger;&nbsp;</a></span>" : "")
                + "</h2></header>";
         });
         
@@ -894,9 +947,9 @@ Readme.prototype = {
             return arguments[1] + "<a href='" + url + "' target='_blank'>" + url + "</a>";
           }
         });
-        text = text.replace(/(:)?([\w!#$%&'\*\+\/=\?\^`\{|\}\~\-](?:[\w!#$%&'\*\+\/=\?\^`\{|\}\~\-]|\.(?=[\w!#$%&'\*\+\/=\?\^`\{|\}\~\-])){0,63}@(?:[a-z]\.|[a-z][a-z0-9]*[a-z0-9]\.)+(?:aero|biz|com|coop|info|musenjum|name|net|org|pro|jobs|travle|arpa|edu|gov|int|mil|nato|[a-z]{2}))/g,
+        text = text.replace(/(:)?([\w!#$%&'*+\/=?^`{|}~\-](?:[\w!#$%&'*+/=?^`{|}~\-]|\.(?=[\w!#$%&'*+/=?^`{|}~\-])){0,63}@(?:[a-z]\.|[a-z][a-z0-9\-]*[a-z0-9]\.)+(?:aero|biz|com|coop|info|musenjum|name|net|org|pro|jobs|travle|arpa|edu|gov|int|mil|nato|[a-z]{2}))/g,
           function(){
-            if(arguments[1] != null) return arguments[0];
+            if(arguments[1]) return arguments[0];
             return "<a href='mailto:" + arguments[2] + "'>" + arguments[2] + "</a>";
           }
         );
@@ -953,14 +1006,14 @@ Readme.prototype = {
         text = text.replace(/\(\((.+?)\)\)/g, "<span title='$1' style='cursor:pointer;'>(*)</span>");
 
         //文字参照文字
-        text = text.replace(/&heart;/g, "<img src='img/heart.png' class='icon' />");
-        text = text.replace(/&smile;/g, "<img src='img/smile.png' class='icon' />");
-        text = text.replace(/&bigsmile;/g, "<img src='img/bigsmile.png' class='icon'/>");
-        text = text.replace(/&huh;/g, "<img src='img/huh.png' class='icon' />");
-        text = text.replace(/&oh;/g, "<img src='img/oh.png' class='icon '/>");
-        text = text.replace(/&wink;/g, "<img src='img/wink.png' class='icon' />");
-        text = text.replace(/&sad;/g, "<img src='img/sad.png' class='icon'/>");
-        text = text.replace(/&worried;/g, "<img src='img/worried.png' class='icon'/>");
+        text = text.replace(/&heart;/g, "<img src='staff/heart.png' class='icon' />");
+        text = text.replace(/&smile;/g, "<img src='staff/smile.png' class='icon' />");
+        text = text.replace(/&bigsmile;/g, "<img src='staff/bigsmile.png' class='icon'/>");
+        text = text.replace(/&huh;/g, "<img src='staff/huh.png' class='icon' />");
+        text = text.replace(/&oh;/g, "<img src='staff/oh.png' class='icon '/>");
+        text = text.replace(/&wink;/g, "<img src='staff/wink.png' class='icon' />");
+        text = text.replace(/&sad;/g, "<img src='staff/sad.png' class='icon'/>");
+        text = text.replace(/&worried;/g, "<img src='staff/worried.png' class='icon'/>");
 
         text = text.replace(/&apos;/g, "'");
         //text = text.replace(/&/g, "&amp;");
@@ -1089,7 +1142,7 @@ Readme.prototype = {
               href = url;
             }
             str += "'>" + (isNolink ? "" : "<a target='_blank' href='" + href + "'>")
-                + (isNoimg ? "" : "<img src='img/file.png' class='icon' />")
+                + (isNoimg ? "" : "<img src='staff/file.png' class='icon' />")
                 + (repStr || url) + (isNolink ? "" : "<\/a>") + (isBlock ? "<\/p>" : "");
           }
           return str;
