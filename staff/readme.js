@@ -1,4 +1,4 @@
-﻿/*  readme.js, version 3.0.0
+﻿/*  readme.js, version 4.0.0
  *  (c) 2008-2012 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
@@ -738,8 +738,13 @@ Readme.prototype = {
         text = text.replace(/\$gt;/g, ">");
 
         //
-        // インライン要素(事前処理)
+        // 事前処理
         //
+
+        //整形済みテキスト 事前変換
+        text = text.replace(/\r\n>\|(\|)?(\r\n(?:.|\r\n)*?|)\r\n\1\|<(?=\r\n( |>\|)?)/g, function(){
+          return (arguments[1] ? "\r\n |src|" : "\r\n |txt|") + arguments[2].replace(/\r\n/g, "\r\n ") +  (arguments[3] ? "\r\n" : "");
+        });
 
         //for diary
         if(_isDiary) {
@@ -752,11 +757,6 @@ Readme.prototype = {
         /*
         * ブロック要素
         */
-
-        //整形済みテキスト 事前変換
-        text = text.replace(/\r\n>\|(\|)?(\r\n(?:.|\r\n)*?|)\r\n\1\|<(?=\r\n( |>\|)?)/g, function(){
-          return (arguments[1] ? "\r\n |src|" : "\r\n |txt|") + arguments[2].replace(/\r\n/g, "\r\n ") +  (arguments[3] ? "\r\n" : "");
-        });
 
         //左寄せ・センタリング・右寄せ
         text = text.replace(/\r\n(LEFT|CENTER|RIGHT):(.*?)(?=\r\n)/g, "\r\n<p style='text-align:$1'>$2</p>");
