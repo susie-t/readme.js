@@ -1,9 +1,9 @@
-﻿/*  readme.js, version 4.0.0
- *  (c) 2008-2012 susie-t
+﻿/*  readme.js, version 4.0.1
+ *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "3.0.0";
+Readme.version = "4.0.1";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -1320,7 +1320,7 @@ Readme.debug = function(message){
 };
 Readme.debug.isValid = false;
 
-Readme.T = function(time, message) {
+Readme.T = function(time, message, alertTime) {
   return function() {
     var dif;
     if(typeof (time) == "string") {
@@ -1328,7 +1328,7 @@ Readme.T = function(time, message) {
     } else if(time instanceof Date) {
       dif = time.getTime() - new Date().getTime();
     }
-    return message + "&nbsp;" +
+    var _message = message + "&nbsp;" +
       (
         (dif < 0)
         ? "<b>！！！予定を過ぎています！！！</b>"
@@ -1342,5 +1342,10 @@ Readme.T = function(time, message) {
               )
           )
       );
+    if(alertTime !== null && dif < alertTime * 60 * 1000){
+        window.focus();
+        alert(_message.unescapeHTML());
+    }
+    return _message;
   };
 };
