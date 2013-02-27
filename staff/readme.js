@@ -1,9 +1,9 @@
-﻿/*  readme.js, version 4.0.3
+﻿/*  readme.js, version 4.0.3.1
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "4.0.2";
+Readme.version = "4.0.3.1";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -131,6 +131,17 @@ Readme.prototype = {
       SRC: "ソースフォルダ"
     };
     
+    var bI = {};
+    bI[bN.BACK] = '<i class="icon-backward icon-white"></i>';
+    bI[bN.RELOAD] = '<i class="icon-refresh icon-white"></i>';
+    bI[bN.TOP] = '<i class="icon-arrow-up icon-white"></i>';
+    bI[bN.DEFAULT] = '<i class="icon-home icon-white"></i>';
+    bI[bN.CATALOG]  = '<i class="icon-list icon-white"></i>';
+    bI[bN.SEARCH] = '<i class="icon-search icon-white"></i>';
+    bI[bN.HELP] = '<i class="icon-question-sign icon-white"></i>';
+    bI[bN.ROOT] = '<i class="icon-wrench icon-white"></i>';
+    bI[bN.SRC] = '<i class="icon-pencil icon-white"></i>';
+    
     pages = Object.extend(pages, {
       _catalog: {
         name: "<" + bN.CATALOG + ">"
@@ -183,7 +194,7 @@ Readme.prototype = {
       button[bN.BACK] = "javascript:history.back();";
       button[bN.RELOAD] = "javascript:location.reload();";
       //button[bN.TOP] = locationPage + encodeURIComponent(topPage || $H(pages).keys()[0]);
-//      button[bN.TOP] = getRedirect(topPage || $H(pages).keys()[0]);
+      //button[bN.TOP] = getRedirect(topPage || $H(pages).keys()[0]);
       button[bN.TOP] = getRedirect(topPage || pagesItr.first());
       button[bN.CATALOG] = getRedirect("_catalog");
       button[bN.SEARCH] = getRedirect("_search");
@@ -217,7 +228,9 @@ Readme.prototype = {
         var link = document.createElement("a");
         Element.addClassName(link, 'btn');
         Element.addClassName(link, 'btn-info');
-        link.innerHTML = "<span style='white-space:nowrap;'>" + (link.id = pair.key) + "</span>";
+        var str =  useBootstrap ? bI[pair.key] || pair.key : pair.key;
+        link.innerHTML = "<span style='white-space:nowrap;'>" + str + "</span>";
+        link.id = link.title = pair.key;
         if(typeof pair.value == "string") {
           if([bN.BACK, bN.RELOAD, bN.TOP, bN.DEFAULT, bN.CATALOG, bN.SEARCH, bN.HELP].include(pair.key) == false) {
             link.target = "_blank";
