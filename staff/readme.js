@@ -1,9 +1,9 @@
-﻿/*  readme.js, version 4.0.1
+﻿/*  readme.js, version 4.0.2
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "4.0.1";
+Readme.version = "4.0.2";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -713,12 +713,24 @@ Readme.prototype = {
       //
       function readWikiSrc(text, _srcDir, _srcFile) {
 
+        //
+        //事前処理
+        //
+
         text = text.replace(/\r(?!\n)/g, "\r\n");
         text = text.replace(/(.)\n/g, function(){
           return (arguments[1] == "\r") ? arguments[0] : arguments[1] + "\r\n";
         });
         
         if(!/.*\r\n$/.test(text)) text += "\r\n";
+        
+        //行継続
+        text = text.replace(/\r\n\^/g, "");
+
+        //整形済みテキスト 事前変換
+        text = text.replace(/\r\n>\|(\|)?(\r\n(?:.|\r\n)*?|)\r\n\1\|<(?=\r\n( |>\|)?)/g, function(){
+          return (arguments[1] ? "\r\n |src|" : "\r\n |txt|") + arguments[2].replace(/\r\n/g, "\r\n ") +  (arguments[3] ? "\r\n" : "");
+        });
 
         //コメント
         //整形済みテキスト内は対象外とする
@@ -737,15 +749,6 @@ Readme.prototype = {
         text = text.replace(/\$lt;/g, "<");
         text = text.replace(/\$gt;/g, ">");
 
-        //
-        // 事前処理
-        //
-
-        //整形済みテキスト 事前変換
-        text = text.replace(/\r\n>\|(\|)?(\r\n(?:.|\r\n)*?|)\r\n\1\|<(?=\r\n( |>\|)?)/g, function(){
-          return (arguments[1] ? "\r\n |src|" : "\r\n |txt|") + arguments[2].replace(/\r\n/g, "\r\n ") +  (arguments[3] ? "\r\n" : "");
-        });
-
         //for diary
         if(_isDiary) {
           text = text.replace(/\r\n(?=\r\n)/g, "\r\n&nbsp;");
@@ -753,6 +756,7 @@ Readme.prototype = {
 
         //改行
         text = text.replace(/~\r\n(?! )/g, "<br/>");
+        text = text.replace(/\r\n_/g, "<br/>");
 
         /*
         * ブロック要素
