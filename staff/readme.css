@@ -9,12 +9,12 @@ h1.title{
 }
 #title{
   font-size:1em;
-  color:navy;
+  color:#333383;
 }
 #date{
   font-size:0.6em;
   font-weight:normal;
-  color:navy;
+  color:#333383;
 }
 #menu{
   float:left; 
@@ -27,6 +27,7 @@ h1.title{
 #select{
   float:right;
   font-size:0.9em;
+  width:auto;
 }
 #index{
   background-color:#f0f8ff;
@@ -47,7 +48,7 @@ h1.title{
   clear:both;
 }
 hr{
-  color:navy;
+  color:#666683;
   border-style:solid;
 }
 a.goTop{
@@ -73,24 +74,24 @@ ol li div.title, ul li div.title, section h2.title{
 /*ol li, ul li{*/
   font-weight:bold;
   font-size:1.4em;
-  color:navy;
+  color:#333383;
   line-height :1.3em;
 }
-ul li div.title, section h2.title{
+ul li div.title, section section h2.title{
   margin-left:-1em;
 }
 ol ol{
   list-style-type:upper-alpha;
 }
-ol ol li div.title, ul ul li div.title, section section h2.title{
-  color:#0000cd;
+ol ol li div.title, ul ul li div.title, section section section h2.title{
+  color:#3333cd;
   font-size:1.3em;
 }
 ol ol ol{
   list-style-type:decimal;
 }
-ol ol ol li div.title, ul ul ul li div.title, section section section h2.title{
-  color:blue;
+ol ol ol li div.title, ul ul ul li div.title, section section section section h2.title{
+  color:#3333ff;
   font-size:1.2em;
 }
 ol ol ol ol{
@@ -178,14 +179,14 @@ dt{
 }
 dd{}
 
-p{
+p, blockquote p{
   /*text-indent:1em;*/
   margin-bottom:0.8em;
   margin-top:0.4em;
   font-size:1em;
   line-height:1.3em;
 }
-pre{
+body:not(.use-bootstrap) pre{
   border-style:inset;
   border-width:1px;
   border-color:gray;
@@ -201,7 +202,7 @@ pre{
   /*padding:10px 10px 20px 10px;*/
   /*overflow:auto;*/
 }
-blockquote{
+body:not(.use-bootstrap) blockquote{
   border-style:inset;
   border-width:1px;
   border-color:gray;
@@ -232,6 +233,9 @@ table{
   border-style:solid;
   border-color:gray;
   border-width:1px;
+}
+table.table{
+  width:auto;
 }
 table td{
   border-style:solid;
@@ -267,7 +271,7 @@ hr.middle{
 div.end{
   clear:both;
 }
-#terop{
+body:not(.use-bootstrap) #terop{
   /*background-color:#66cc66;*/
   margin:0px;
 }
@@ -301,3 +305,67 @@ h3{
   background-color:#99ffff;
 }
 */
+
+body.use-bootstrap{
+  line-height:1em;
+}
+body.use-bootstrap h1.title{
+  line-height:1em;
+  font-size:26px;
+}
+body.use-bootstrap #menu{
+  margin:0;
+}
+body.use-bootstrap #menu a{
+  margin:0;
+}
+body.use-bootstrap #index{
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+
+}
+body.use-bootstrap hr{
+  border:solid #666683 1px;
+  margin-top:0.5em;
+  margin-bottom:0.5em;
+}
+body.use-bootstrap pre{
+  background-color:#FFF5EE;
+  line-height:1.3em;
+  font-weight:normal;
+  font-size:0.9em;
+  color:inferit;
+  letter-spacing:inherit;
+  width:97%;
+  font-family:"ＭＳ ゴシック", "Courier New", monospace;
+  padding:iherit;
+}
+body.use-bootstrap blockquote{
+  background-color:#e6e6fa;
+  padding:0.5em;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+body.use-bootstrap .hiddenArea{
+  border-style: none;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+body.use-bootstrap #terop{
+  margin:0 -1em 0.5em -1em;
+}
+body.use-bootstrap label.radio,
+body.use-bootstrap label.checkbox{
+  margin-left:1em;
+}
+body.use-bootstrap h3{
+  font-size:14px;
+  line-height:1em;
+}

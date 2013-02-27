@@ -1,4 +1,4 @@
-﻿/*  readme.js, version 4.0.2
+﻿/*  readme.js, version 4.0.3
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
@@ -51,6 +51,20 @@ Readme.prototype = {
     var isForPaste = obj.isForPaste;
     var isPrettyPrint = obj.prettyPrint || true;
     var defaultPrettyPrint = obj.defaultPrettyPrint || false;
+    
+    var useBootstrap = null;
+    jQuery.find("link[rel='stylesheet'][type='text/css']").each(function(link){
+      if(/bootstrap(?:_min)?\.css$/.test(link.href)){
+        if(obj.useBootstrap === false){
+          Element.remove(link);
+          useBootstrap = false;
+        }else{
+          useBootstrap = true;
+        }
+        return false;
+      }
+    });
+    if(useBootstrap == null) useBootstrap = false;
 
     var isFirefox = (/firefox/i).test(navigator.userAgent); //Firefoxバグ?対応
     var current = [];
@@ -65,6 +79,10 @@ Readme.prototype = {
         //AjaxOrHFT = HFT;
       /*@end
     @*/
+
+    if(useBootstrap){
+      Element.addClassName(document.body, "use-bootstrap");
+    }
 
     var pages = {};
     var pagesItr = [];
@@ -184,10 +202,21 @@ Readme.prototype = {
     }
     
     function createMenu(_button){
-      menu.appendChild(document.createTextNode("["));
+      var _menu;
+      if(!useBootstrap){
+        _menu = menu;
+        menu.appendChild(document.createTextNode("["));
+      }else{
+        _menu = document.createElement("div");
+        Element.addClassName(_menu, 'btn-group');
+        menu.appendChild(_menu);
+      }
+      
       $H(_button).each(function(pair, index) {
         if(pair.key == bN.DEFAULT && defaultPage == "") throw $continue;
         var link = document.createElement("a");
+        Element.addClassName(link, 'btn');
+        Element.addClassName(link, 'btn-info');
         link.innerHTML = "<span style='white-space:nowrap;'>" + (link.id = pair.key) + "</span>";
         if(typeof pair.value == "string") {
           if([bN.BACK, bN.RELOAD, bN.TOP, bN.DEFAULT, bN.CATALOG, bN.SEARCH, bN.HELP].include(pair.key) == false) {
@@ -198,10 +227,10 @@ Readme.prototype = {
           link.href = "javascript:void(0);";
           link.onclick = pair.value;
         }
-        if(index > 0) menu.appendChild(document.createTextNode("|"));
-        menu.appendChild(link);
+        if(index > 0 && !useBootstrap) _menu.appendChild(document.createTextNode("|"));
+        _menu.appendChild(link);
       });
-      menu.appendChild(document.createTextNode("]"));
+      if(!useBootstrap) menu.appendChild(document.createTextNode("]"));
     }
 
     if(!isSimple) {
@@ -275,14 +304,16 @@ Readme.prototype = {
         case "_search":
 
           new Insertion.Bottom(base,
-            "<form id='searchForm' onsubmit='return false;'>"
-            + "検索対象は変換前のテキストです。AND、OR検索は大文字小文字を区別します。<br/>"
-            + "<input id='searchText' type='text'/><input type='text' style='display:none;'/>"
-            + "<button id='searchButton'>検索</button>"
-            + "<input type='radio' name='searchType' value='and' checked/> AND検索 "
-            + "<input type='radio' name='searchType' value='or'/> OR検索 "
-            + "<input type='radio' name='searchType' value='regExp'/> 正規表現検索"
-            + "<input type='checkbox' name='ignoreCase' checked /> 大文字・小文字区別なし"
+            "<form id='searchForm' onsubmit='return false;' class='form-search'>"
+            + "<p>検索対象は変換前のテキストです。AND、OR検索は大文字小文字を区別します。</p>"
+            + "<span class='input-append'>"
+            + "<input type='text' style='display:none;'/><input id='searchText' type='text' class='search-query'/>"
+            + "<button id='searchButton' class='btn'>検索</button>"
+            + "</span>"
+            + "<label class='radio'><input type='radio' name='searchType' value='and' checked/>AND検索</label>"
+            + "<label class='radio'><input type='radio' name='searchType' value='or'/>OR検索</label>"
+            + "<label class='radio'><input type='radio' name='searchType' value='regExp'/>正規表現検索</label>"
+            + "<label class='checkbox'><input type='checkbox' name='ignoreCase' checked />大文字・小文字区別なし</label>"
             + "<div id='searchResult'></div>"
             + "</form>");
 
@@ -826,7 +857,7 @@ Readme.prototype = {
 
         //表組み
         text = text.replace(/(\r\n\|(?:.*?\r\n\|)*?.*?)(?=\r\n[^\|]|\r\n$)/g, function() {
-          var str = "\r\n<table>";
+          var str = "\r\n<table class='table table-bordered'>";
           str += arguments[1].replace(/\r\n(\|[^\r\n]*\|)(c)?(?=\r\n|$)/ig, function() {
             var isCol = !!(arguments[2]);
             var _str = isCol ? "" : "<tr>";
