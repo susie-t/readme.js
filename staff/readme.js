@@ -440,7 +440,7 @@ Readme.prototype = {
                           if(typeof value == 'function') continue;
                           var isSkip = false;
                           $.each(["width", "height"], function(){
-                            if((new RegExp(this)).test(key) && !(key in _this.style)){
+                            if((new RegExp(this)).test(key)){
                               isSkip = true;
                               return false;
                             }
@@ -452,11 +452,15 @@ Readme.prototype = {
                           });
                           style += cp + ":" + value + ";";
                         }
+                        $.each(["width", "height"], function(i, v){
+                          if(_this.style[v]){
+                            style += v + ":" + _this.style[v] + ";";
+                          }
+                        });
                         $(this).attr("style", style);
                       });
                     })(jQuery);
                   }
-                  
                 }
               },
               error : function(obj, status, e) {
