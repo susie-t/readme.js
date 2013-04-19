@@ -1,9 +1,9 @@
-﻿/*  readme.js, version 4.0.3.1
+﻿/*  readme.js, version 4.0.3.2
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "4.0.3.1";
+Readme.version = "4.0.3.2";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -33,24 +33,23 @@ Readme.prototype = {
           }
         }
       };
-      isSimple = true;
     }
 
-    var srcDir = obj.srcDir || "readmesrc";
-    var suffix = obj.suffix || ".txt";
-    var imgDir = obj.imgDir || "img";
+    var srcDir = (obj.srcDir != null) ? obj.srcDir : "readmesrc";
+    var suffix = (obj.suffix != null) ? obj.suffix : ".txt";
+    var imgDir = (obj.imgDir != null) ? obj.imgDir : "img";
     var topPage = obj.topPage || null;
     var defaultPage = (location.search || "").substring(1);
     var isDiary = !!(obj.isDiary);
     var isAjax = (obj.isAjax !== false);
-    var isRefFromSrc = obj.isRefFromSrc || false;
+    var isRefFromSrc = !!(obj.isRefFromSrc);
     var isHTML = !!(obj.isHTML)
     var terop = obj.terop;
     var isHeadListNumber = isDiary ? false : (obj.isHeadListNumber !== false);
-    var isWeb = obj.isWeb;
-    var isForPaste = obj.isForPaste;
-    var isPrettyPrint = obj.prettyPrint || true;
-    var defaultPrettyPrint = obj.defaultPrettyPrint || false;
+    var isWeb = !!(obj.isWeb);
+    var isForPaste = !!(obj.isForPaste);
+    var isPrettyPrint = (obj.prettyPrint != null) ? obj.prettyPrint : true;
+    var defaultPrettyPrint = !!(obj.defaultPrettyPrint);
     
     var useBootstrap = null;
     jQuery.find("link[rel='stylesheet'][type='text/css']").each(function(link){
@@ -140,7 +139,7 @@ Readme.prototype = {
     bI[bN.SEARCH] = '<i class="icon-search icon-white"></i>';
     bI[bN.HELP] = '<i class="icon-question-sign icon-white"></i>';
     bI[bN.ROOT] = '<i class="icon-wrench icon-white"></i>';
-    bI[bN.SRC] = '<i class="icon-pencil icon-white"></i>';
+    bI[bN.SRC] = '<i class="icon-edit icon-white"></i>';
     
     pages = Object.extend(pages, {
       _catalog: {
