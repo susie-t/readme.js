@@ -1,9 +1,9 @@
-﻿/*  readme.js, version 4.0.3.3
+﻿/*  readme.js, version 4.0.3.4
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "4.0.3.3";
+Readme.version = "4.0.3.4";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -425,6 +425,7 @@ Readme.prototype = {
                     (function($){
                       //$(headList).find("ul li div.title, section h2.title").css({"margin-left":"auto"});
                       $(headList).find("*").each(function(){
+                        var _this = this;
                         var css;
                         if (document.defaultView && document.defaultView.getComputedStyle) {
                           css = document.defaultView.getComputedStyle(this, null);
@@ -435,15 +436,16 @@ Readme.prototype = {
                         }
                         var style = "";
                         for(var key in css){
+                          var value = css[key];
+                          if(typeof value == 'function') continue;
                           var isSkip = false;
                           $.each(["width", "height"], function(){
-                            if((new RegExp(this)).test(key)){
+                            if((new RegExp(this)).test(key) && !(key in _this.style)){
                               isSkip = true;
                               return false;
                             }
                           });
                           if(isSkip) continue;
-                          var value = css[key];
                           var cp = key.replace(/[A-Z]/g, function(){
                             var arg = arguments;
                             return "-" + arg[0].toLowerCase();
@@ -783,8 +785,13 @@ Readme.prototype = {
 
         //【独自】折りたたみエリア
         text = text.replace(/\r\n<\?--(.*?)\r\n((?:.*?\r\n)*?.*?)\r\n--\?>/g, function(){
-          var msg = arguments[1] || "＞＞＞クリックすると表示します＜＜＜";
-          return "\r\n\$lt;div class='hiddenArea' onclick='Readme.showHiddenArea(this);'\$gt;\r\n" + msg + "\r\n" + arguments[2] + "\r\n\$lt;/div\$gt;"
+          var msg = arguments[1];
+          if(!_isForPaste){
+            var msg = msg || "＞＞＞クリックすると表示します＜＜＜";
+            return "\r\n\$lt;div class='hiddenArea' onclick='Readme.showHiddenArea(this);'\$gt;\r\n" + msg + "\r\n" + arguments[2] + "\r\n\$lt;/div\$gt;"
+          }else{
+            return '\r\n' + (msg ? msg + "\r\n" : '') + arguments[2];
+          }
         });
 
         //エスケープ
