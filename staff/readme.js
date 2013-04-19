@@ -1,9 +1,9 @@
-﻿/*  readme.js, version 4.0.3.2
+﻿/*  readme.js, version 4.0.3.3
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "4.0.3.2";
+Readme.version = "4.0.3.3";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -172,7 +172,7 @@ Readme.prototype = {
       button[bN.BACK] = function() { backPage(); };
       button[bN.RELOAD] = function() { reloadPage(); };
       if(!isWeb){
-        srcDir = "./";
+        srcDir = "";
         button[bN.HELP] = function() { writePage("_help"); };
         button[bN.ROOT] = "./";
         button[bN.SRC] = srcDir;
@@ -277,7 +277,8 @@ Readme.prototype = {
       key = key || topPage || pagesItr.first();
       var page = pages[key];
       var src = page.src || [key];
-      var _srcDir = (page.srcDir || srcDir) + ((key && page.src) ? "/" + key : "");
+      var _srcDir = (page.srcDir != null ? page.srcDir : srcDir);
+      _srcDir = (_srcDir ? _srcDir + '/' : '') + ((key && page.src) ? key : '');
       if(!isWeb) $(bN.SRC).href = _srcDir;
       var _suffix = page.suffix || suffix;
       var _imgDir = page.imgDir || imgDir;
@@ -376,7 +377,7 @@ Readme.prototype = {
               cache : false,
               dataType : "text",
               type : "get",
-              url : _srcDir + '/' + value + _suffix,
+              url : (_srcDir ? _srcDir + '/' : '') + value + _suffix,
               success : function(text) {
                 if(index) new Insertion.Bottom(headList, "<div class='end'></div>");
                 if(__isHTML) {
@@ -1124,12 +1125,16 @@ Readme.prototype = {
               } else {
                 if(otherSrcDir) {
                   imgUrl = otherSrcDir + "/" + url;
-                } else {
+                } else if(_srcDir){
                   imgUrl = _srcDir + "/" + url;
+                }else{
+                  imgUrl = url;
                 }
               }
-            } else {
+            } else if(_imgDir){
               imgUrl = _imgDir + "/" + url;
+            }else{
+              imgUrl = url;
             }
             str += (isNolink ? "" : "<a target='_blank' href='" + imgUrl + "'>")
                 + "<img src='" + imgUrl + "'" + (isBlock ? " class='block'" : "")
