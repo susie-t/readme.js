@@ -1,9 +1,9 @@
-﻿/*  readme.js, version 4.0.3.4
+﻿/*  readme.js, version 4.0.3.5
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "4.0.3.4";
+Readme.version = "4.0.3.5";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -825,7 +825,7 @@ Readme.prototype = {
         text = text.replace(/\r\n~(.*)(?=\r\n)/g, "\r\n<p>$1</p>");
 
         //引用文
-        text = text.replace(/\r\n>\r\n((?:.|\r\n)*?)\r\n<(?=\r\n)/g, "\r\n<blockquote>$1</blockquote>");
+        text = text.replace(/\r\n>(\r\n(?:.|\r\n)*?)\r\n<(?=\r\n)/g, "\r\n<blockquote>$1</blockquote>");
         text = text.replace(/\r\n>(.*?)(?=\r\n)/g, "\r\n<blockquote>$1</blockquote>");
 
         //番号なしリスト
