@@ -1,9 +1,9 @@
-﻿/*  readme.js, version 4.0.3.5
+﻿/*  readme.js, version 4.0.3.6
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "4.0.3.5";
+Readme.version = "4.0.3.6";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -350,6 +350,7 @@ Readme.prototype = {
           }
 
           var srcCount = 0;
+          var textArray = [];
           src.each(function(value, index) {
             var __isHTML = (_isHTML || /\.html?$/i.test(value));
 //            new AjaxOrHFT.Request(_srcDir + '/' + value + _suffix, {
@@ -384,84 +385,20 @@ Readme.prototype = {
                   //text = text.replace(/^\*+([^\*].*)\[\#(.*)\](?=\r\n)/g, "\r\n<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
                   //     + "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + value + _suffix + "&nbsp;]</span><li id='$2'>$1</li>");
                   text = text.replace(/^\*+([^\*].*)\[\#(.*)\](?=\r\n)/g, "\r\n<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
-                       + "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + value + _suffix + "&nbsp;]</span><li id='$2'>$1</section>");
+                       + "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + value + _suffix + "&nbsp;]</span><section id='$2'>$1</section>");
                 } else {
                   text = readWikiSrc(text, _srcDir, value + _suffix);
                 }
-                new Insertion.Bottom(headList, text);
-                
-                srcCount++;
-                
-                if(srcCount == src.length){
-                  if(_isHeadListNumber){
-                    (function($){
-                      var num1 = 1;
-                      var wk = "";
-                      $(headList).children("section").each(function(){
-                        var title1 = $($(this).find("h2.title").get(0));
-                        title1.html(num1 + ".&nbsp;" + title1.html());
-                        var num2 = 1;
-                        $(this).children("section").each(function(){
-                          var title2 = $($(this).find("h2.title").get(0));
-                          title2.html(num1 + "-" + num2 + ".&nbsp;" + title2.html());
-                          var num3 = 1;
-                          $(this).children("section").each(function(){
-                            var title3 = $($(this).find("h2.title").get(0));
-                            title3.html(num1 + "-" + num2 + "-" + num3 + ".&nbsp;" + title3.html());
-                            num3++;
-                          });
-                          num2++;
-                        });
-                        num1++;
-                       });
-                    })(jQuery);
-                  }
-                  
-                  if(_prettyPrint) {
-                    prettyPrint();
-                  }
-                  
-                  if(_isForPaste){
-                    (function($){
-                      //$(headList).find("ul li div.title, section h2.title").css({"margin-left":"auto"});
-                      $(headList).find("*").each(function(){
-                        var _this = this;
-                        var css;
-                        if (document.defaultView && document.defaultView.getComputedStyle) {
-                          css = document.defaultView.getComputedStyle(this, null);
-                        } else if (this.currentStyle) {
-                          css = this.currentStyle;
-                        }else{
-                          return;
-                        }
-                        var style = "";
-                        for(var key in css){
-                          var value = css[key];
-                          if(typeof value == 'function') continue;
-                          var isSkip = false;
-                          $.each(["width", "height"], function(){
-                            if((new RegExp(this)).test(key)){
-                              isSkip = true;
-                              return false;
-                            }
-                          });
-                          if(isSkip) continue;
-                          var cp = key.replace(/[A-Z]/g, function(){
-                            var arg = arguments;
-                            return "-" + arg[0].toLowerCase();
-                          });
-                          style += cp + ":" + value + ";";
-                        }
-                        $.each(["width", "height"], function(i, v){
-                          if(_this.style[v]){
-                            style += v + ":" + _this.style[v] + ";";
-                          }
-                        });
-                        $(this).attr("style", style);
-                      });
-                    })(jQuery);
-                  }
-                }
+                textArray[index] = text;
+                var DONE = true;
+                textArray.each(function(text, i){
+                  if(text === undefined) throw $break;
+                  if(text === DONE) throw $continue;
+                  new Insertion.Bottom(headList, text);
+                  srcCount++;
+                  textArray[i] = DONE;
+                });
+                if(srcCount == src.length) afterInsert();
               },
               error : function(obj, status, e) {
                 var msg = "Ajax Error : " + obj.url;
@@ -476,12 +413,85 @@ Readme.prototype = {
           index.style.cursor = "pointer";
           //index.style.visibility = "visible";
           index.style.display = "";
-          
       }
 
       if(!isBack && current.last() != key) current.push(key);
       if(select) select.selectedIndex = ($A($("select").options).detect(function(option) { return (option.value == key); }) || { index: 0 }).index;
       if(_terop && _terop.length > 0) Readme.terop(_terop, 1, 20, "terop"); else if(Readme.terop.tid) clearTmeout(Readme.terop.tid);
+
+      //
+      // 反映終了後処理関数
+      // 
+      function afterInsert(){
+        if(_isHeadListNumber){
+          (function($){
+            var num1 = 1;
+            var wk = "";
+            $(headList).children("section").each(function(){
+              var title1 = $($(this).find("h2.title").get(0));
+              title1.html(num1 + ".&nbsp;" + title1.html());
+              var num2 = 1;
+              $(this).children("section").each(function(){
+                var title2 = $($(this).find("h2.title").get(0));
+                title2.html(num1 + "-" + num2 + ".&nbsp;" + title2.html());
+                var num3 = 1;
+                $(this).children("section").each(function(){
+                  var title3 = $($(this).find("h2.title").get(0));
+                  title3.html(num1 + "-" + num2 + "-" + num3 + ".&nbsp;" + title3.html());
+                  num3++;
+                });
+                num2++;
+              });
+              num1++;
+             });
+          })(jQuery);
+        }
+        
+        if(_prettyPrint) {
+          prettyPrint();
+        }
+        
+        if(_isForPaste){
+          (function($){
+            //$(headList).find("ul li div.title, section h2.title").css({"margin-left":"auto"});
+            $(headList).find("*").each(function(){
+              var _this = this;
+              var css;
+              if (document.defaultView && document.defaultView.getComputedStyle) {
+                css = document.defaultView.getComputedStyle(this, null);
+              } else if (this.currentStyle) {
+                css = this.currentStyle;
+              }else{
+                return;
+              }
+              var style = "";
+              for(var key in css){
+                var value = css[key];
+                if(typeof value == 'function') continue;
+                var isSkip = false;
+                $.each(["width", "height"], function(){
+                  if((new RegExp(this)).test(key)){
+                    isSkip = true;
+                    return false;
+                  }
+                });
+                if(isSkip) continue;
+                var cp = key.replace(/[A-Z]/g, function(){
+                  var arg = arguments;
+                  return "-" + arg[0].toLowerCase();
+                });
+                style += cp + ":" + value + ";";
+              }
+              $.each(["width", "height"], function(i, v){
+                if(_this.style[v]){
+                  style += v + ":" + _this.style[v] + ";";
+                }
+              });
+              $(this).attr("style", style);
+            });
+          })(jQuery);
+        }
+      }
 
       //
       // 検索関数
