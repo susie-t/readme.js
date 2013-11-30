@@ -1,4 +1,4 @@
-﻿/*  readme.js, version 4.0.3.6
+﻿/*  readme.js, version 4.0.3.7
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
@@ -466,6 +466,7 @@ Readme.prototype = {
               }
               var style = "";
               for(var key in css){
+                if(/^\d+$/.test(key)) continue;
                 var value = css[key];
                 if(typeof value == 'function') continue;
                 var isSkip = false;
