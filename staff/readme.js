@@ -3,7 +3,7 @@
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "4.0.3.6";
+Readme.version = "4.0.3.7";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -50,7 +50,7 @@ Readme.prototype = {
     var isForPaste = !!(obj.isForPaste);
     var isPrettyPrint = (obj.prettyPrint != null) ? obj.prettyPrint : true;
     var defaultPrettyPrint = !!(obj.defaultPrettyPrint);
-    
+
     var useBootstrap = null;
     jQuery.find("link[rel='stylesheet'][type='text/css']").each(function(link){
       if(/bootstrap(?:_min)?\.css$/.test(link.href)){
@@ -129,7 +129,7 @@ Readme.prototype = {
       ROOT: "ルートフォルダ",
       SRC: "ソースフォルダ"
     };
-    
+
     var bI = {};
     bI[bN.BACK] = '<i class="icon-backward icon-white"></i>';
     bI[bN.RELOAD] = '<i class="icon-refresh icon-white"></i>';
@@ -140,7 +140,7 @@ Readme.prototype = {
     bI[bN.HELP] = '<i class="icon-question-sign icon-white"></i>';
     bI[bN.ROOT] = '<i class="icon-wrench icon-white"></i>';
     bI[bN.SRC] = '<i class="icon-edit icon-white"></i>';
-    
+
     pages = Object.extend(pages, {
       _catalog: {
         name: "<" + bN.CATALOG + ">"
@@ -151,7 +151,7 @@ Readme.prototype = {
     });
     pagesItr.push("_catalog");
     pagesItr.push("_search");
-    
+
     if(!isWeb){
       pages = Object.extend(pages, {
         _help: {
@@ -210,7 +210,7 @@ Readme.prototype = {
       menu.appendChild(document.createTextNode("  "));
       createMenu(obj.button);
     }
-    
+
     function createMenu(_button){
       var _menu;
       if(!useBootstrap){
@@ -221,7 +221,7 @@ Readme.prototype = {
         Element.addClassName(_menu, 'btn-group');
         menu.appendChild(_menu);
       }
-      
+
       $H(_button).each(function(pair, index) {
         if(pair.key == bN.DEFAULT && defaultPage == "") throw $continue;
         var link = document.createElement("a");
@@ -338,9 +338,9 @@ Readme.prototype = {
           break;
 
         default:
-        
+
           //var headList = document.createElement(_isHeadListNumber ? "ol" : "ul");
-          
+
           var headList;
           if(base.tagName.toLowerCase() != "section"){
             var headList = document.createElement("section");
@@ -421,7 +421,7 @@ Readme.prototype = {
 
       //
       // 反映終了後処理関数
-      // 
+      //
       function afterInsert(){
         if(_isHeadListNumber){
           (function($){
@@ -446,11 +446,11 @@ Readme.prototype = {
              });
           })(jQuery);
         }
-        
+
         if(_prettyPrint) {
           prettyPrint();
         }
-        
+
         if(_isForPaste){
           (function($){
             //$(headList).find("ul li div.title, section h2.title").css({"margin-left":"auto"});
@@ -496,7 +496,7 @@ Readme.prototype = {
 
       //
       // 検索関数
-      // 
+      //
       function search() {
 
         var searchText = $("searchText").value;
@@ -592,7 +592,7 @@ Readme.prototype = {
 //                throw new Error(msg);
 //              }
 //            });
-            
+
             jQuery.ajax({
               cache : false,
               dataType : "text",
@@ -681,7 +681,7 @@ Readme.prototype = {
 
       //
       // 一覧作成関数
-      // 
+      //
       function catalog() {
 
         var searchResult = $("searchResult");
@@ -700,7 +700,7 @@ Readme.prototype = {
           var src = page.src || [key];
           var _srcDir = (page.srcDir || srcDir) + ((key && page.src) ? "/" + key : "");
           var _suffix = page.suffix || suffix;
-          
+
           return src.each(function(_src) {
             length++;
 //            new AjaxOrHFT.Request(_srcDir + '/' + _src + _suffix, {
@@ -782,9 +782,9 @@ Readme.prototype = {
         text = text.replace(/(.)\n/g, function(){
           return (arguments[1] == "\r") ? arguments[0] : arguments[1] + "\r\n";
         });
-        
+
         if(!/.*\r\n$/.test(text)) text += "\r\n";
-        
+
         //行継続
         text = text.replace(/\r\n\^/g, "");
 
@@ -925,7 +925,7 @@ Readme.prototype = {
         });
 
         //見出し
-        
+
         //var hl = _isHeadListNumber ? "ol" : "ul";
 
 //        text = text.replace(/^(\*[^\*](?:.|\r\n)*?)(?=\r\n\*{2}(?!\*))/g, "$1\r\n<" + hl + ">");
@@ -977,14 +977,14 @@ Readme.prototype = {
              var arg = arguments;
              if(!isSimple && arg[3] == null) return arg[0];
              return "\r\n<header>"
-               + ((isSimple || _isForPaste) ? "" 
+               + ((isSimple || _isForPaste) ? ""
                  : "<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
                  + ((isWeb || arg[1].length > 1) ?  "" : "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + _srcFile + "&nbsp;]") + "</span>")
                + "<h2 class='title'" + ((arg[4]) ? " id='" + arg[4] + "'" : "") + ">" + arg[2]
                + ((arg[3] && !_isForPaste) ? "<span class='append'><a class='anchor_super' id='" + arg[4] + "' href='?" + key + "#" + arg[4] + "'" + " title='" + arg[4] + "'>&nbsp;&dagger;&nbsp;</a></span>" : "")
                + "</h2></header>";
         });
-        
+
         //目次(削除)
         text = text.replace(/#contents;?/g, "");
 
@@ -1027,7 +1027,7 @@ Readme.prototype = {
             return arguments[1] + "<a href='" + url + "' target='_blank'>" + url + "</a>";
           }
         });
-        text = text.replace(/(:)?([\w!#$%&'*+\/=?^`{|}~\-](?:[\w!#$%&'*+/=?^`{|}~\-]|\.(?=[\w!#$%&'*+/=?^`{|}~\-])){0,63}@(?:[a-z]\.|[a-z][a-z0-9\-]*[a-z0-9]\.)+(?:aero|biz|com|coop|info|musenjum|name|net|org|pro|jobs|travle|arpa|edu|gov|int|mil|nato|[a-z]{2}))/g,
+        text = text.replace(/(:)?([\w!#$%&'*+\/=?^`{|}~\-](?:[\w!#$%&'*+\/=?^`{|}~\-]|\.(?=[\w!#$%&'*+\/=?^`{|}~\-])){0,63}@(?:[a-z]\.|[a-z][a-z0-9\-]*[a-z0-9]\.)+(?:aero|biz|com|coop|info|musenjum|name|net|org|pro|jobs|travle|arpa|edu|gov|int|mil|nato|[a-z]{2}))/g,
           function(){
             if(arguments[1]) return arguments[0];
             return "<a href='mailto:" + arguments[2] + "'>" + arguments[2] + "</a>";
@@ -1250,7 +1250,7 @@ Readme.prototype = {
     function getRedirect(param) {
       return locationPage + encodeURIComponent(param);
     }
-    
+
   },
 
   insertValue: function(tagName, id, value) {
