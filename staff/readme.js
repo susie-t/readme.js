@@ -1,9 +1,9 @@
-﻿/*  readme.js, version 4.0.3.7
+﻿/*  readme.js, version 4.0.3.6
  *  (c) 2008-2013 susie-t
 /*--------------------------------------------------------------------------*/
 jQuery.noConflict();
 var Readme = Class.create();
-Readme.version = "4.0.3.7";
+Readme.version = "4.0.3.4";
 Readme.prototype = {
   initialize: function(obj) {
     window.__readme = this;
@@ -66,18 +66,11 @@ Readme.prototype = {
     if(useBootstrap == null) useBootstrap = false;
 
     var isFirefox = (/firefox/i).test(navigator.userAgent); //Firefoxバグ?対応
+    var isIE = (/MSIE|Trident/i).test(navigator.userAgent);
     var current = [];
 
     var select = null;
     var isSimple = obj.isSimple;
-
-    //var AjaxOrHFT = Ajax;
-
-    /*@cc_on
-    /*@if(@_jscript_version > 5.6)
-        //AjaxOrHFT = HFT;
-      /*@end
-    @*/
 
     if(useBootstrap){
       Element.addClassName(document.body, "use-bootstrap");
@@ -278,7 +271,8 @@ Readme.prototype = {
       var page = pages[key];
       var src = page.src || [key];
       var _srcDir = (page.srcDir != null ? page.srcDir : srcDir);
-      _srcDir = (_srcDir ? _srcDir + '/' : '') + ((key && page.src) ? key : '');
+      _srcDir = _srcDir + ((_srcDir && key && page.src) ? '/' + key : '');
+
       if(!isWeb) $(bN.SRC).href = _srcDir;
       var _suffix = page.suffix || suffix;
       var _imgDir = page.imgDir || imgDir;
@@ -353,60 +347,72 @@ Readme.prototype = {
           var textArray = [];
           src.each(function(value, index) {
             var __isHTML = (_isHTML || /\.html?$/i.test(value));
-//            new AjaxOrHFT.Request(_srcDir + '/' + value + _suffix, {
-//              onComplete: function(req) {
-//                var text = req.responseText;
-//                if(index) new Insertion.Bottom(headList, "<div class='end'></div>");
-//                if(__isHTML) {
-//                  text = text.replace(/^\*+([^\*].*)\[\#(.*)\](?=\r\n)/g, "\r\n<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
-//                       + "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + value + _suffix + "&nbsp;]</span><li id='$2'>$1</li>");
-//                } else {
-//                  text = readWikiSrc(text, _srcDir, value + _suffix);
-//                }
-//                new Insertion.Bottom(headList, text);
-//              },
-//              onException: function(obj, e) {
-//                //prototype.jsがローカルファイルを必ずevalするため。デバッグ時はコメントアウト。
-//                if(e.name.toLowerCase() == "syntaxerror") return;
-//                var msg = "AjaxOrHFT Error : " + obj.url;
-//                Readme.Error = e;
-//                if(!isWeb) alert(msg);
-//                throw new Error(msg);
-//              }
-//            });
-            jQuery.ajax({
-              cache : false,
-              dataType : "text",
-              type : "get",
-              url : (_srcDir ? _srcDir + '/' : '') + value + _suffix,
-              success : function(text) {
-                if(index) new Insertion.Bottom(headList, "<div class='end'></div>");
-                if(__isHTML) {
-                  //text = text.replace(/^\*+([^\*].*)\[\#(.*)\](?=\r\n)/g, "\r\n<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
-                  //     + "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + value + _suffix + "&nbsp;]</span><li id='$2'>$1</li>");
-                  text = text.replace(/^\*+([^\*].*)\[\#(.*)\](?=\r\n)/g, "\r\n<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
-                       + "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + value + _suffix + "&nbsp;]</span><section id='$2'>$1</section>");
-                } else {
-                  text = readWikiSrc(text, _srcDir, value + _suffix);
+            if(isIE){
+              new HFT.Request(_srcDir + '/' + value + _suffix, {
+                onComplete: function(req) {
+                  var text = req.responseText;
+                  if(index) new Insertion.Bottom(headList, "<div class='end'></div>");
+                  if(__isHTML) {
+                      text = text.replace(/^\*+([^\*].*)\[\#(.*)\](?=\r\n)/g, "\r\n<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
+                              + "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + value + _suffix + "&nbsp;]</span><section id='$2'>$1</section>");
+                  } else {
+                    text = readWikiSrc(text, _srcDir, value + _suffix);
+                  }
+                  textArray[index] = text;
+                  var DONE = true;
+                  textArray.each(function(text, i){
+                    if(text === undefined) throw $break;
+                    if(text === DONE) throw $continue;
+                    new Insertion.Bottom(headList, text);
+                    srcCount++;
+                    textArray[i] = DONE;
+                  });
+                  if(srcCount == src.length) afterInsert();
+                },
+                onException: function(obj, e) {
+                  //prototype.jsがローカルファイルを必ずevalするため。デバッグ時はコメントアウト。
+                  if(e.name.toLowerCase() == "syntaxerror") return;
+                  var msg = "AjaxOrHFT Error : " + obj.url;
+                  Readme.Error = e;
+                  if(!isWeb) alert(msg);
+                  throw new Error(msg);
                 }
-                textArray[index] = text;
-                var DONE = true;
-                textArray.each(function(text, i){
-                  if(text === undefined) throw $break;
-                  if(text === DONE) throw $continue;
-                  new Insertion.Bottom(headList, text);
-                  srcCount++;
-                  textArray[i] = DONE;
-                });
-                if(srcCount == src.length) afterInsert();
-              },
-              error : function(obj, status, e) {
-                var msg = "Ajax Error : " + obj.url;
-                Readme.Error = e;
-                if(!isWeb) alert(msg);
-                throw new Error(msg);
-              }
-            });
+              });
+            }else{
+              jQuery.ajax({
+                cache : false,
+                dataType : "text",
+                type : "get",
+                url : (_srcDir ? _srcDir + '/' : '') + value + _suffix,
+                success : function(text) {
+                  if(index) new Insertion.Bottom(headList, "<div class='end'></div>");
+                  if(__isHTML) {
+                    //text = text.replace(/^\*+([^\*].*)\[\#(.*)\](?=\r\n)/g, "\r\n<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
+                    //     + "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + value + _suffix + "&nbsp;]</span><li id='$2'>$1</li>");
+                    text = text.replace(/^\*+([^\*].*)\[\#(.*)\](?=\r\n)/g, "\r\n<span class='navi'><a class='goTop' href='" + ((isAjax) ? "#title" : getRedirect(key + "#title")) + "'>&nbsp;↑&nbsp;</a>"
+                         + "<br/>[&nbsp;<a href='" + _srcDir + "' target='_blank'>" + _srcDir + "</a>/" + value + _suffix + "&nbsp;]</span><section id='$2'>$1</section>");
+                  } else {
+                    text = readWikiSrc(text, _srcDir, value + _suffix);
+                  }
+                  textArray[index] = text;
+                  var DONE = true;
+                  textArray.each(function(text, i){
+                    if(text === undefined) throw $break;
+                    if(text === DONE) throw $continue;
+                    new Insertion.Bottom(headList, text);
+                    srcCount++;
+                    textArray[i] = DONE;
+                  });
+                  if(srcCount == src.length) afterInsert();
+                },
+                error : function(obj, status, e) {
+                  var msg = "Ajax Error : " + obj.url;
+                  Readme.Error = e;
+                  if(!isWeb) alert(msg);
+                  throw new Error(msg);
+                }
+              });
+            }
           });
 
           index.onclick = function() { Readme.makeIndex((isAjax) ? null : key, _isHeadListNumber); };
@@ -466,7 +472,6 @@ Readme.prototype = {
               }
               var style = "";
               for(var key in css){
-                if(/^\d+$/.test(key)) continue;
                 var value = css[key];
                 if(typeof value == 'function') continue;
                 var isSkip = false;
@@ -546,101 +551,104 @@ Readme.prototype = {
 
           return src.each(function(_src) {
             length++;
-//            new AjaxOrHFT.Request(_srcDir + '/' + _src + _suffix, {
-//              onComplete: function(req) {
-//                text = req.responseText;
-//                var isHit = false;
-//                var searchFnc = function(searchWord) { return (text.indexOf(searchWord) != -1) };
-//                switch(searchType) {
-//                  case "and":
-//                    if(searchWordArray.all(searchFnc)) {
-//                      isHit = true;
-//                    }
-//                    break;
-//
-//                  case "or":
-//                    if(searchWordArray.any(searchFnc)) {
-//                      isHit = true;
-//                    }
-//                    break;
-//
-//                  case "regExp":
-//                    if(text.match(regExp)) {
-//                      isHit = true;
-//                    }
-//                    break;
-//                }
-//
-//                if(isHit) {
-//                  var match = text.match(/^\*([^\*].*)\[\#(.*)\](?=\r\n)/);
-//                  var title = match[1];
-//                  var id = match[2];
-//                  var result = readWikiSrc("\r\n-[[" + (page.name || page.title || key) + " > " + title + ">" + key + "#" + id + "]]" + ((isWeb) ? "" : "(&ref(" + _srcDir + ");/" + _src + _suffix + ")"));
-//                  new Insertion.Bottom(searchResult, result);
-//                  hitted++;
-//                }
-//                searched++;
-//              },
-//              options: { asynchronous: false },
-//              onException: function(obj, e) {
-//                //prototype.jsがローカルファイルを必ずevalするため。デバッグ時はコメントアウト。
-//                if(e.name.toLowerCase() == "syntaxerror") return;
-//                searched++;
-//                var msg = "AjaxOrHFT Error : " + obj.url;
-//                Readme.Error = e;
-//                if(!isWeb) alert(msg);
-//                throw new Error(msg);
-//              }
-//            });
+            
+            if(isIE){
+              new HFT.Request(_srcDir + '/' + _src + _suffix, {
+                onComplete: function(req) {
+                  text = req.responseText;
+                  var isHit = false;
+                  var searchFnc = function(searchWord) { return (text.indexOf(searchWord) != -1) };
+                  switch(searchType) {
+                    case "and":
+                      if(searchWordArray.all(searchFnc)) {
+                        isHit = true;
+                      }
+                      break;
 
-            jQuery.ajax({
-              cache : false,
-              dataType : "text",
-              type : "get",
-              url : _srcDir + '/' + _src + _suffix,
-              async  : false,
-              success :function(text) {
-                if(ignoreCase) text = text.toLowerCase();
-                var isHit = false;
-                var searchFnc = function(searchWord) { return (text.indexOf(searchWord) != -1) };
-                switch(searchType) {
-                  case "and":
-                    if(searchWordArray.all(searchFnc)) {
-                      isHit = true;
-                    }
-                    break;
+                    case "or":
+                      if(searchWordArray.any(searchFnc)) {
+                        isHit = true;
+                      }
+                      break;
 
-                  case "or":
-                    if(searchWordArray.any(searchFnc)) {
-                      isHit = true;
-                    }
-                    break;
+                    case "regExp":
+                      if(text.match(regExp)) {
+                        isHit = true;
+                      }
+                      break;
+                  }
 
-                  case "regExp":
-                    if(text.match(regExp)) {
-                      isHit = true;
-                    }
-                    break;
+                  if(isHit) {
+                    var match = text.match(/^\*([^\*].*)\[\#(.*)\](?=\r\n)/);
+                    var title = match[1];
+                    var id = match[2];
+                    var result = readWikiSrc("\r\n-[[" + (page.name || page.title || key) + " > " + title + ">" + key + "#" + id + "]]" + ((isWeb) ? "" : "(&ref(" + _srcDir + ");/" + _src + _suffix + ")"));
+                    new Insertion.Bottom(searchResult, result);
+                    hitted++;
+                  }
+                  searched++;
+                },
+                options: { asynchronous: false },
+                onException: function(obj, e) {
+                  //prototype.jsがローカルファイルを必ずevalするため。デバッグ時はコメントアウト。
+                  if(e.name.toLowerCase() == "syntaxerror") return;
+                  searched++;
+                  var msg = "AjaxOrHFT Error : " + obj.url;
+                  Readme.Error = e;
+                  if(!isWeb) alert(msg);
+                  throw new Error(msg);
                 }
+              });            	
+            }else{
+              jQuery.ajax({
+                cache : false,
+                dataType : "text",
+                type : "get",
+                url : _srcDir + '/' + _src + _suffix,
+                async  : false,
+                success :function(text) {
+                  if(ignoreCase) text = text.toLowerCase();
+                  var isHit = false;
+                  var searchFnc = function(searchWord) { return (text.indexOf(searchWord) != -1) };
+                  switch(searchType) {
+                    case "and":
+                      if(searchWordArray.all(searchFnc)) {
+                        isHit = true;
+                      }
+                      break;
 
-                if(isHit) {
-                  var match = text.match(/^\*([^\*].*)\[\#(.*)\](?=\r\n)/);
-                  var title = match[1];
-                  var id = match[2];
-                  var result = readWikiSrc("\r\n-[[" + (page.name || page.title || key) + " > " + title + ">" + key + "#" + id + "]]" + ((isWeb) ? "" : "(&ref(" + _srcDir + ");/" + _src + _suffix + ")"));
-                  new Insertion.Bottom(searchResult, result);
-                  hitted++;
+                    case "or":
+                      if(searchWordArray.any(searchFnc)) {
+                        isHit = true;
+                      }
+                      break;
+
+                    case "regExp":
+                      if(text.match(regExp)) {
+                        isHit = true;
+                      }
+                      break;
+                  }
+
+                  if(isHit) {
+                    var match = text.match(/^\*([^\*].*)\[\#(.*)\](?=\r\n)/);
+                    var title = match[1];
+                    var id = match[2];
+                    var result = readWikiSrc("\r\n-[[" + (page.name || page.title || key) + " > " + title + ">" + key + "#" + id + "]]" + ((isWeb) ? "" : "(&ref(" + _srcDir + ");/" + _src + _suffix + ")"));
+                    new Insertion.Bottom(searchResult, result);
+                    hitted++;
+                  }
+                  searched++;
+                },
+                error : function(obj, status, e) {
+                  searched++;
+                  var msg = "Ajax Error : " + obj.url;
+                  Readme.Error = e;
+                  if(!isWeb) alert(msg);
+                  throw new Error(msg);
                 }
-                searched++;
-              },
-              error : function(obj, status, e) {
-                searched++;
-                var msg = "Ajax Error : " + obj.url;
-                Readme.Error = e;
-                if(!isWeb) alert(msg);
-                throw new Error(msg);
-              }
-            });
+              });            	
+            }
           });
         });
 
@@ -703,51 +711,54 @@ Readme.prototype = {
 
           return src.each(function(_src) {
             length++;
-//            new AjaxOrHFT.Request(_srcDir + '/' + _src + _suffix, {
-//              onComplete: function(req) {
-//                text = req.responseText;
-//                var match = text.match(/^\*([^\*].*)\[\#(.*)\](?=\r\n)/);
-//                var title = match[1];
-//                var id = match[2];
-//                var result = readWikiSrc("\r\n-[[" + (page.name || page.title || key) + " > " + title + ">" + key + "#" + id + "]]" + ((isWeb) ? "" : " (&ref(" + _srcDir + ");/" + _src + _suffix + ")"));
-//                new Insertion.Bottom(searchResult, result);
-//                hitted++;
-//                searched++;
-//              },
-//              options: { asynchronous: false },
-//              onException: function(obj, e) {
-//                //prototype.jsがローカルファイルを必ずevalするため。デバッグ時はコメントアウト。
-//                if(e.name.toLowerCase() == "syntaxerror") return;
-//                searched++;
-//                var msg = "AjaxOrHFT Error : " + obj.url;
-//                Readme.Error = e;
-//                if(!isWeb) alert(msg);
-//                throw new Error(msg);
-//              }
-//            });
-            jQuery.ajax({
-              cache : false,
-              dataType : "text",
-              type : "get",
-              url : _srcDir + '/' + _src + _suffix,
-              async  : false,
-              success : function(text) {
-                var match = text.match(/^\*([^\*].*)\[\#(.*)\](?=\r\n)/);
-                var title = match[1];
-                var id = match[2];
-                var result = readWikiSrc("\r\n-[[" + (page.name || page.title || key) + " > " + title + ">" + key + "#" + id + "]]" + ((isWeb) ? "" : " (&ref(" + _srcDir + ");/" + _src + _suffix + ")"));
-                new Insertion.Bottom(searchResult, result);
-                hitted++;
-                searched++;
-              },
-              error : function(obj, status, e) {
-                searched++;
-                var msg = "Ajax Error : " + obj.url;
-                Readme.Error = e;
-                if(!isWeb) alert(msg);
-                throw new Error(msg);
-              }
-            });
+            if(isIE){
+              new HFT.Request(_srcDir + '/' + _src + _suffix, {
+                onComplete: function(req) {
+                  text = req.responseText;
+                  var match = text.match(/^\*([^\*].*)\[\#(.*)\](?=\r\n)/);
+                  var title = match[1];
+                  var id = match[2];
+                  var result = readWikiSrc("\r\n-[[" + (page.name || page.title || key) + " > " + title + ">" + key + "#" + id + "]]" + ((isWeb) ? "" : " (&ref(" + _srcDir + ");/" + _src + _suffix + ")"));
+                  new Insertion.Bottom(searchResult, result);
+                  hitted++;
+                  searched++;
+                },
+                options: { asynchronous: false },
+                onException: function(obj, e) {
+                  //prototype.jsがローカルファイルを必ずevalするため。デバッグ時はコメントアウト。
+                  if(e.name.toLowerCase() == "syntaxerror") return;
+                  searched++;
+                  var msg = "AjaxOrHFT Error : " + obj.url;
+                  Readme.Error = e;
+                  if(!isWeb) alert(msg);
+                  throw new Error(msg);
+                }
+              });            	
+            }else{
+              jQuery.ajax({
+                cache : false,
+                dataType : "text",
+                type : "get",
+                url : _srcDir + '/' + _src + _suffix,
+                async  : false,
+                success : function(text) {
+                  var match = text.match(/^\*([^\*].*)\[\#(.*)\](?=\r\n)/);
+                  var title = match[1];
+                  var id = match[2];
+                  var result = readWikiSrc("\r\n-[[" + (page.name || page.title || key) + " > " + title + ">" + key + "#" + id + "]]" + ((isWeb) ? "" : " (&ref(" + _srcDir + ");/" + _src + _suffix + ")"));
+                  new Insertion.Bottom(searchResult, result);
+                  hitted++;
+                  searched++;
+                },
+                error : function(obj, status, e) {
+                  searched++;
+                  var msg = "Ajax Error : " + obj.url;
+                  Readme.Error = e;
+                  if(!isWeb) alert(msg);
+                  throw new Error(msg);
+                }
+              });            	
+            }
           });
         });
 
@@ -778,13 +789,7 @@ Readme.prototype = {
         //事前処理
         //
 
-        text = text.replace(/\r(?!\n)/g, "\r\n");
-        text = text.replace(/(.)\n/g, function(){
-          return (arguments[1] == "\r") ? arguments[0] : arguments[1] + "\r\n";
-        });
-
         if(!/.*\r\n$/.test(text)) text += "\r\n";
-
         //行継続
         text = text.replace(/\r\n\^/g, "");
 
@@ -971,7 +976,6 @@ Readme.prototype = {
         }else{
           text = text.replace(/^(\*{1}(?!\*)(?:.|\r\n)*?)$/g, "<" + hl + ">\r\n$1\r\n</" + hl + ">");
         }
-        text = text.replace(/^(\*{1}(?!\*)(?:.|\r\n)*?)$/g, "<" + hl + ">\r\n$1\r\n</" + hl + ">");
 
         text = text.replace(/\r\n(\*+)([^\*].*?)(\[\#(.*?)\])?(?=\r\n)/g, function(){
              var arg = arguments;
@@ -984,6 +988,8 @@ Readme.prototype = {
                + ((arg[3] && !_isForPaste) ? "<span class='append'><a class='anchor_super' id='" + arg[4] + "' href='?" + key + "#" + arg[4] + "'" + " title='" + arg[4] + "'>&nbsp;&dagger;&nbsp;</a></span>" : "")
                + "</h2></header>";
         });
+
+        //(window.open()).document.write(text);
 
         //目次(削除)
         text = text.replace(/#contents;?/g, "");

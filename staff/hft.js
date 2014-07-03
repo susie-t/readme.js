@@ -39,7 +39,11 @@ HFT.Request = function(url, options) {
     var responseText = (fdb.innerHTML.match(/\<pre\>((?:[^<]|\r|\n)*)(?:\<\/pre\>)?/i)||["",""])[1];
     responseText = responseText.replace(/&lt;/ig, "<")
                                .replace(/&gt;/ig, ">")
-                               .replace(/&amp;/ig, "&");
+                               .replace(/&amp;/ig, "&")
+                               .replace(/\r(?!\n)/g, "\r\n")
+                               .replace(/(\s|\S)(?=\n)/g, function(){
+                                 return (arguments[1] == "\r") ? arguments[1] : arguments[1] + "\r";
+                               });
     var transport = {
       responseText: responseText
     };
